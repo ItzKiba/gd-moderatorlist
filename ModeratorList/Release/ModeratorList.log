@@ -61,11 +61,11 @@ E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\libs\coc
 E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\libs\cocos-headers\cocos2dx\robtop\xml\pugixml.hpp(851,22): message : see declaration of 'pugi::xml_document'
 E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\libs\cocos-headers\cocos2dx\robtop\xml\DS_Dictionary.h(11,30): warning C4251: 'DS_Dictionary::dictTree': class 'std::vector<pugi::xml_node,std::allocator<pugi::xml_node>>' needs to have dll-interface to be used by clients of class 'DS_Dictionary'
 E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\libs\cocos-headers\cocos2dx\robtop\xml\DS_Dictionary.h(11,7): message : see declaration of 'std::vector<pugi::xml_node,std::allocator<pugi::xml_node>>'
-E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\ModeratorList\ModLayer.cpp(187,32): warning C4018: '<': signed/unsigned mismatch
+E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\ModeratorList\ModLayer.cpp(202,32): warning C4018: '<': signed/unsigned mismatch
      Creating library E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\Release\ModeratorList.lib and object E:\Microsoft Visual Studio\Geometry Dash Modding\Projects\ModeratorList\Release\ModeratorList.exp
 LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-  1 of 2356 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  5 of 2328 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

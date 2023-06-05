@@ -19,15 +19,18 @@ protected:
 	virtual void keyBackClicked(); // for pressing the ESC key to go back
 	void backButtonCallback(CCObject*);
 	void infoButtonCallback(CCObject*);
+	void refreshButtonCallback(CCObject*);
 
 	void onPrevPage(CCObject*);
 	void onNextPage(CCObject*);
 
 	void openProfileCallback(CCObject*);
 	void showModStats();
+	void clearObjects();
 
 
 public:
+	bool isStatsCreated;
 	void loadPage(unsigned int page);
 	void loadFailedToConnect();
 	void loadUnsuccessful();
@@ -38,4 +41,7 @@ public:
 
 	void createUserRequest();
 	void onUserRequestComplete(cocos2d::extension::CCHttpClient* sender, cocos2d::extension::CCHttpResponse* response);
+	void initRequest();
+	static size_t writeFunction(void* ptr, size_t size, size_t nmemb, std::string* data);
+	
 };

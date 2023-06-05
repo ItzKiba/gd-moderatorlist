@@ -1,8 +1,11 @@
+#define CURL_STATICLIB
+#include <curl\curl.h>
 #include "ModLayer.h"
 #include "ModUsers.h"
 #include <vector>
 #include <iostream>
-#include <WinUser.h>
+
+
 
 bool ModLayer::init() {
 
@@ -46,6 +49,14 @@ bool ModLayer::init() {
     infoButtonMenu->addChild(infoButton);
     this->addChild(infoButtonMenu);
 
+    //CCSprite* refreshButtonSprite = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
+    //auto refreshButton = gd::CCMenuItemSpriteExtra::create(refreshButtonSprite, this, menu_selector(ModLayer::refreshButtonCallback));
+    //CCMenu* refreshButtonMenu = CCMenu::create();
+    //infoButtonMenu->setZOrder(3);
+    //refreshButtonMenu->setPosition(size.width - 45, 45);
+    //refreshButtonMenu->addChild(refreshButton);
+    //this->addChild(refreshButtonMenu);
+
     CCMenu* menu = CCMenu::create();
     auto prevSprite = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
     prevBtn = gd::CCMenuItemSpriteExtra::create(
@@ -79,8 +90,6 @@ bool ModLayer::init() {
 
     ModLayer::objects = std::vector<CCNode*>{};
 
-    ModLayer::createUserRequest();
-
     nextBtn->setVisible(false);
     prevBtn->setVisible(false);
 
@@ -97,6 +106,9 @@ bool ModLayer::init() {
     logo->setScale(1.5f);
     logo->setPosition({size.width / 2, size.height * (9/10.f)});
     this->addChild(logo);
+
+    //ModLayer::createUserRequest();
+    initRequest();
 
     return true; 
 }
@@ -123,6 +135,12 @@ void ModLayer::callback(CCObject*) {
 
 }
 
+//void ModLayer::refreshButtonCallback(CCObject*) {
+//    clearObjects();
+//    ModUsers::clearLists();
+//    initRequest();
+//}
+
 void ModLayer::backButtonCallback(CCObject*) {
     keyBackClicked();
 }
@@ -143,10 +161,7 @@ void ModLayer::openProfileCallback(CCObject* obj) {
 
 void ModLayer::loadPage(unsigned int page) {
 
-    for (CCNode* node : ModLayer::objects) {
-        node->removeFromParent();
-    }
-    ModLayer::objects = std::vector<CCNode*>{};
+    clearObjects();
 
     auto size = CCDirector::sharedDirector()->getWinSize();
 
@@ -263,44 +278,94 @@ int ModLayer::getPage() const {
     return page;
 }
 
-void ModLayer::createUserRequest() {
-    auto request = new cocos2d::extension::CCHttpRequest();
-    request->setUrl("https://raw.githubusercontent.com/ItzKiba/gd-moderatorlist/main/list.txt");
-    request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpGet);
-
-    request->setResponseCallback(this, httpresponse_selector(ModLayer::onUserRequestComplete));
-
-    cocos2d::extension::CCHttpClient::getInstance()->send(request);
-    request->release();
-}
-
-void ModLayer::onUserRequestComplete(cocos2d::extension::CCHttpClient* sender, cocos2d::extension::CCHttpResponse* response) {
-
-    if (!response) {
-        ModUsers::setRequestString("No response.");
-        ModLayer::loadFailedToConnect();
+void ModLayer::initRequest() {
+    //curl_global_init(CURL_GLOBAL_DEFAULT);
+    auto curl = curl_easy_init();
+    if (!curl) {
         return;
     }
+    curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/ItzKiba/gd-moderatorlist/main/list.txt");
+    curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
+    curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 
-    if (!response->isSucceed()) {
-        ModUsers::setRequestString("Unsuccessful");
+    std::string response_string;
+    std::string header_string;
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
+
+    curl_easy_perform(curl);
+
+    if (CURLE_OK == 0) {
+        ModUsers::setupLists(response_string);
+        ModLayer::loadPage(0);
+        ModLayer::showModStats();
+    }
+    else {
         ModLayer::loadUnsuccessful();
-        return;
     }
-    // SUCCESS if it reaches here
-    std::vector<char>* buffer = response->getResponseData();
+    
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    curl = NULL;
 
-    std::string result(buffer->begin(), buffer->end());
-    ModUsers::setRequestString(result);
-    ModUsers::setupLists(result);
-    ModLayer::loadPage(0);
-    ModLayer::showModStats();
-
-
-    /*auto label3 = CCLabelBMFont::create(ModUsers::getRequestString().c_str(), "bigFont.fnt");
-    label3->setPosition({ 200, 200 });
-    this->addChild(label3);*/
 }
+
+size_t ModLayer::writeFunction(void* ptr, size_t size, size_t nmemb, std::string* data) {
+    data->append((char*)ptr, size * nmemb);
+    return size * nmemb;
+}
+
+//void ModLayer::createUserRequest() {
+//    auto request = new cocos2d::extension::CCHttpRequest();
+//    request->setUrl("https://raw.githubusercontent.com/ItzKiba/gd-moderatorlist/main/list.txt");
+//    request->setRequestType(cocos2d::extension::CCHttpRequest::kHttpGet);
+//
+//    request->setResponseCallback(this, httpresponse_selector(ModLayer::onUserRequestComplete));
+//
+//    cocos2d::extension::CCHttpClient::getInstance()->send(request);
+//    request->release();
+//}
+
+//void ModLayer::onUserRequestComplete(cocos2d::extension::CCHttpClient* sender, cocos2d::extension::CCHttpResponse* response) {
+//
+//    if (!response) {
+//        ModUsers::setRequestString("No response.");
+//        ModLayer::loadFailedToConnect();
+//        return;
+//    }
+//
+//    if (!response->isSucceed()) {
+//        ModUsers::setRequestString("Unsuccessful");
+//        ModLayer::loadUnsuccessful();
+//        return;
+//    }
+//    // SUCCESS if it reaches here
+//    std::vector<char>* buffer = response->getResponseData();
+//
+//    std::string result(buffer->begin(), buffer->end());
+//    ModUsers::setRequestString(result);
+//    ModUsers::setupLists(result);
+//    ModLayer::loadPage(0);
+//    ModLayer::showModStats();
+//
+//
+//    /*auto label3 = CCLabelBMFont::create(ModUsers::getRequestString().c_str(), "bigFont.fnt");
+//    label3->setPosition({ 200, 200 });
+//    this->addChild(label3);*/
+//}
+
+//void ModLayer::initRequest() {
+//    cpr::Response resp = cpr::Get(cpr::Url("https://raw.githubusercontent.com/ItzKiba/gd-moderatorlist/main/list.txt"));
+//    if (resp.status_code == 200) {
+//        // success!!
+//        ModUsers::setupLists(resp.text);
+//        ModLayer::loadPage(0);
+//        ModLayer::showModStats();
+//        return;
+//    }
+//    ModLayer::loadUnsuccessful();
+//}
 
 void ModLayer::loadFailedToConnect() {
     auto size = CCDirector::sharedDirector()->getWinSize();
@@ -323,15 +388,15 @@ void ModLayer::loadFailedToConnect() {
 }
 
 void ModLayer::loadUnsuccessful() {
+    void clearObjects();
     auto size = CCDirector::sharedDirector()->getWinSize();
     auto label1 = CCLabelBMFont::create("Connection unsuccessful!", "bigFont.fnt");
     label1->setPosition({size.width / 2, size.height / 2 + 15});
     label1->setColor({ 255, 150, 150 });
     label1->setScale(0.8f);
 
-    auto label2 = CCLabelBMFont::create("A connection was established, but\nno data could be retrieved.", "bigFont.fnt");
+    auto label2 = CCLabelBMFont::create("Check your internet connection, nerd.", "bigFont.fnt");
     label2->setPosition({ size.width / 2, (size.height / 2) - 15 });
-    label2->setAnchorPoint({0.5, 0.5});
     label2->setScale(0.5f);
     label2->setOpacity(128);
 
@@ -341,7 +406,13 @@ void ModLayer::loadUnsuccessful() {
 }
 
 void ModLayer::showModStats() {
+
+    if (isStatsCreated) {
+        return;
+    }
+
     auto size = CCDirector::sharedDirector()->getWinSize();
+    isStatsCreated = true;
 
     auto bgSprite2 = cocos2d::extension::CCScale9Sprite::create("square02_small.png");
     bgSprite2->setPosition({ size.width / 2, 40.f });
@@ -391,7 +462,11 @@ void ModLayer::showModStats() {
     modLabelElder->setScale(0.5f);
     modLabelElder->setAnchorPoint({0, 0.5});
     this->addChild(modLabelElder);
+}
 
-
-
+void ModLayer::clearObjects() {
+    for (CCNode* node : ModLayer::objects) {
+        node->removeFromParent();
+    }
+    ModLayer::objects = std::vector<CCNode*>{};
 }

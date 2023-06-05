@@ -387,9 +387,6 @@
     <ClInclude Include="ModUsers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Request.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -411,9 +408,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModUsers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Request.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
